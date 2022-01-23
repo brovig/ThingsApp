@@ -1,0 +1,132 @@
+﻿@page "/"
+@using Microsoft.Extensions.Logging
+@inject IIndexedDbFactory DbFactory
+
+<style>
+.centered {
+    display: table;
+    text-align: center;
+}
+
+.btn-bot {
+    display: table-cell;
+    vertical-align: bottom;
+}
+</style>
+
+<div class="navbartop">
+    <p>Modules</p>
+</div>
+
+
+@if (things != null && things.Count > 0)
+{
+    @foreach (var thing in things)
+    {
+        <div class="container">
+            <div class="itemname">@thing.Name</div>
+            <div><button class="itembutton" @onclick="(() => MinusQuantity(thing.Id))">-</button></div>
+            <div class="itemquantity">@thing.Quantity</div>
+            <div><button class="itembutton" @onclick="(() => PlusQuantity(thing.Id))">+</button></div>
+        </div>
+        <hr class="new"/>
+    }
+}
+
+
+<div class="navbarbot">
+    <div>
+        <button class="addbutton" data-bs-toggle="offcanvas" data-bs-target="#offcanvasBottom" aria-controls="offcanvasBottom">+</button>
+    </div>
+</div>
+
+
+<div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasBottom" aria-labelledby="offcanvasBottomLabel">
+    @* <div class="offcanvas-header">
+        <!--h5 class="offcanvas-title" id="offcanvasBottomLabel">Offcanvas bottom</h5-->
+        <!--button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button-->
+    </div> *@
+    <div class="offcanvas-body small">
+        <EditForm Model="@newThing" OnValidSubmit="@AddThingToDb">
+            <p><ValidationSummary /></p>
+            <DataAnnotationsValidator />
+            <!--div class="form-group col"-->
+                <input class="form-control" type="text" placeholder="Module Name" @bind="newThing.Name">
+                <br/>
+                <input class="form-control" type="text" placeholder="Enter Quantity" @bind="newThing.Quantity">
+                <br/>
+                <button class="btn btn-success" type="submit">Add</button>
+            <!--/div-->
+        </EditForm>
+        
+    </div>
+</div>
+
+@code{
+    List<Thing> things;
+    Thing newThing = new Thing();
+    private int Id;
+    //public int thingId { get; set; } = thing.Id;
+        
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = await DbFactory.Create<ThingsDb>();
+        things = db.Things.ToList();
+    }
+
+    protected async Task AddThingToDb()
+    {
+        using (var db = await this.DbFactory.Create<ThingsDb>())
+        {
+            db.Things.Add(newThing);
+            await db.SaveChanges();
+        }
+
+        newThing = new Thing();
+        await OnInitializedAsync();  
+        
+    }
+
+    protected async Task MinusQuantity(int thingId)
+    {
+        using (var db = await this.DbFactory.Create<ThingsDb>())
+        {
+            var thingToModify = db.Things.Single(x => x.Id == thingId);
+            if (thingToModify.Quantity > 0 )
+            {
+                thingToModify.Quantity--;
+                await db.SaveChanges();  
+            }
+            else
+            {
+                await DeleteThing(thingToModify);
+            }
+            
+        }
+        await OnInitializedAsync();
+    }
+
+    protected async Task PlusQuantity(int thingId)
+    {
+        using (var db = await this.DbFactory.Create<ThingsDb>())
+        {
+            var thingToModify = db.Things.Single(x => x.Id == thingId);
+            thingToModify.Quantity++;
+            await db.SaveChanges();  
+        }
+        await OnInitializedAsync();
+    }
+
+    protected async Task DeleteThing(Thing thingToDelete)
+    {
+        using (var db = await this.DbFactory.Create<ThingsDb>())
+        {          
+            db.Things.Remove(thingToDelete);
+            await db.SaveChanges();  
+        }
+        await OnInitializedAsync();
+    }
+}
+
+
+
