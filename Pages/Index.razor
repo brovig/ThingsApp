@@ -15,9 +15,8 @@
 </style>
 
 <div class="navbartop">
-    <p>Modules</p>
+    <p>Things</p>
 </div>
-
 
 @if (things != null && things.Count > 0)
 {
@@ -33,32 +32,23 @@
     }
 }
 
-
 <div class="navbarbot">
     <div>
         <button class="addbutton" data-bs-toggle="offcanvas" data-bs-target="#offcanvasBottom" aria-controls="offcanvasBottom">+</button>
     </div>
 </div>
 
-
 <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasBottom" aria-labelledby="offcanvasBottomLabel">
-    @* <div class="offcanvas-header">
-        <!--h5 class="offcanvas-title" id="offcanvasBottomLabel">Offcanvas bottom</h5-->
-        <!--button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button-->
-    </div> *@
     <div class="offcanvas-body small">
         <EditForm Model="@newThing" OnValidSubmit="@AddThingToDb">
             <p><ValidationSummary /></p>
             <DataAnnotationsValidator />
-            <!--div class="form-group col"-->
-                <input class="form-control" type="text" placeholder="Module Name" @bind="newThing.Name">
-                <br/>
-                <input class="form-control" type="text" placeholder="Enter Quantity" @bind="newThing.Quantity">
-                <br/>
-                <button class="btn btn-success" type="submit">Add</button>
-            <!--/div-->
+            <input class="form-control" type="text" placeholder="Module Name" @bind="newThing.Name">
+            <br/>
+            <input class="form-control" type="text" placeholder="Enter Quantity" @bind="newThing.Quantity">
+            <br/>
+            <button class="btn btn-success" type="submit">Add</button>
         </EditForm>
-        
     </div>
 </div>
 
@@ -66,14 +56,12 @@
     List<Thing> things;
     Thing newThing = new Thing();
     private int Id;
-    //public int thingId { get; set; } = thing.Id;
         
     protected override async Task OnInitializedAsync()
     {
         using var db = await DbFactory.Create<ThingsDb>();
         things = db.Things.ToList();
     }
-
     protected async Task AddThingToDb()
     {
         using (var db = await this.DbFactory.Create<ThingsDb>())
@@ -84,9 +72,7 @@
 
         newThing = new Thing();
         await OnInitializedAsync();  
-        
     }
-
     protected async Task MinusQuantity(int thingId)
     {
         using (var db = await this.DbFactory.Create<ThingsDb>())
@@ -101,11 +87,9 @@
             {
                 await DeleteThing(thingToModify);
             }
-            
         }
         await OnInitializedAsync();
     }
-
     protected async Task PlusQuantity(int thingId)
     {
         using (var db = await this.DbFactory.Create<ThingsDb>())
@@ -116,7 +100,6 @@
         }
         await OnInitializedAsync();
     }
-
     protected async Task DeleteThing(Thing thingToDelete)
     {
         using (var db = await this.DbFactory.Create<ThingsDb>())
